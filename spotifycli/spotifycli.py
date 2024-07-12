@@ -140,7 +140,7 @@ def show_song():
 
 def show_songshort():
     _, title = get_song()
-    title = title[:12 + (title[12:] and '…')
+    title = title[:12] + (title[12:] and '…')
     return f'{title}'
 
 
