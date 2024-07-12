@@ -82,7 +82,7 @@ def get_arguments():
 
 
 def show_version():
-    print("1.8.2")
+    return "2.0.0 (2024-07-12) by the_dise\nFork of: https://github.com/pwittchen/spotify-cli-linux"
 
 
 def get_song():
