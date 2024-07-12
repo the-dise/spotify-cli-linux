@@ -193,10 +193,10 @@ def show_artist_short():
 
 def show_playback_status():
     playback_status = get_spotify_property("PlaybackStatus")
-    print({"Playing": '▶',
-           "Paused": '▮▮',
-           "Stopped": '■'
-           }[playback_status])
+    print({"Playing": '󰐊',
+            "Paused": '󰏤',
+            "Stopped": '󰓛'
+            }[playback_status])
 
 
 def show_album():
