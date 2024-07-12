@@ -18,44 +18,25 @@ def main():
         return 0
 
     global client
-    args = add_arguments()
+    parser = argparse.ArgumentParser(description=__doc__)
+    for argument in get_arguments():
+        parser.add_argument(argument[0], help=argument[1], action="store_true")
+    parser.add_argument("--client", action="store", dest="client", help="sets client's dbus name", default="spotify")
+    args = parser.parse_args()
     client = args.client
-    if args.version:
-        show_version()
-    elif args.status:
-        show_status()
-    elif args.statusshort:
-        show_status_short()
-    elif args.statusposition:
-        show_status_position()
-    elif args.song:
-        show_song()
-    elif args.songshort:
-        show_song_short()
-    elif args.artist:
-        show_artist()
-    elif args.artistshort:
-        show_artist_short()
-    elif args.album:
-        show_album()
-    elif args.position:
-        show_position()
-    elif args.playbackstatus:
-        show_playback_status()
-    elif args.lyrics:
-        show_lyrics()
-    elif args.arturl:
-        show_art_url()
-    elif args.play:
-        perform_spotify_action("Play")
-    elif args.pause:
-        perform_spotify_action("Pause")
-    elif args.playpause:
-        perform_spotify_action("PlayPause")
-    elif args.next:
-        perform_spotify_action("Next")
-    elif args.prev:
-        perform_spotify_action("Previous")
+
+    output = []
+
+    for arg in sys.argv[1:]:
+        if arg.startswith('--') and arg != '--client':
+            func_name = f'show_{arg[2:]}'
+            action_name = f'perform_{arg[2:]}'
+            if func_name in globals():
+                output.append(globals()[func_name]())
+            elif action_name in globals():
+                globals()[action_name]()
+
+    print(' - '.join(filter(None, output)))
 
 
 def start_shell():
@@ -75,15 +56,6 @@ def start_shell():
         else:
             print("Error during call to fork()")
             exit(1)
-
-
-def add_arguments():
-    parser = argparse.ArgumentParser(description=__doc__)
-    for argument in get_arguments():
-        parser.add_argument(argument[0], help=argument[1], action="store_true")
-    parser.add_argument("--client", action="store", dest="client",
-                        help="sets client's dbus name", default="spotify")
-    return parser.parse_args()
 
 
 def get_arguments():
@@ -122,7 +94,8 @@ def get_song():
 
 def show_status():
     artist, title = get_song()
-    print(f'{artist} - {title}')
+    return f'{artist} - {title}'
+
 
 def convert_timedelta(duration):
     days, seconds = duration.days, duration.seconds
@@ -131,7 +104,8 @@ def convert_timedelta(duration):
     seconds = (seconds % 60)
     return str(hours).zfill(2), str(minutes).zfill(2), str(seconds).zfill(2)
 
-def show_status_position():
+
+def show_statusposition():
     metadata = get_spotify_property("Metadata")
     position_raw = get_spotify_property("Position")
 
@@ -147,27 +121,27 @@ def show_status_position():
 
     if l_hours != "00":
         # Only show hours if the song is more than an hour long
-        print(f'{artist} - {title} ({p_hours}:{p_minutes}:{p_seconds}/{l_hours}:{l_minutes}:{l_seconds})')
+        return f'{artist} - {title} ({p_hours}:{p_minutes}:{p_seconds}/{l_hours}:{l_minutes}:{l_seconds})'
     else:
-        print(f'{artist} - {title} ({p_minutes}:{p_seconds}/{l_minutes}:{l_seconds})')
+        return f'{artist} - {title} ({p_minutes}:{p_seconds}/{l_minutes}:{l_seconds})'
 
 
-def show_status_short():
+def show_statusshort():
     artist, title = get_song()
-    artist = artist[:15] + (artist[15:] and '...')
-    title = title[:10] + (title[10:] and '...')
-    print(f'{artist} - {title}')
+    artist = artist[:16] + (artist[16:] and '…')
+    title = title[:12] + (title[12:] and '…')
+    return f'{artist} - {title}'
 
 
 def show_song():
     _, title = get_song()
-    print(f'{title}')
+    return f'{title}'
 
 
-def show_song_short():
+def show_songshort():
     _, title = get_song()
-    title = title[:10] + (title[10:] and '...')
-    print(f'{title}')
+    title = title[:12 + (title[12:] and '…')
+    return f'{title}'
 
 
 def show_lyrics():
@@ -175,39 +149,39 @@ def show_lyrics():
         artist, title = get_song()
         lyrics = lyricwikia.get_all_lyrics(artist, title)
         lyrics = ''.join(lyrics[0])
-        print(lyrics)
+        return lyrics
     except BaseException:
-        print('lyrics not found')
+        return 'lyrics not found'
 
 
 def show_artist():
     artist, _ = get_song()
-    print(f'{artist}')
+    return f'{artist}'
 
 
-def show_artist_short():
+def show_artistshort():
     artist, _ = get_song()
-    artist = artist[:15] + (artist[15:] and '...')
-    print(f'{artist}')
+    artist = artist[:15] + (artist[15:] and '…')
+    return f'{artist}'
 
 
-def show_playback_status():
+def show_playbackstatus():
     playback_status = get_spotify_property("PlaybackStatus")
-    print({"Playing": '󰐊',
+    return {"Playing": '󰐊',
             "Paused": '󰏤',
             "Stopped": '󰓛'
-            }[playback_status])
+            }[playback_status]
 
 
 def show_album():
     metadata = get_spotify_property("Metadata")
     album = metadata['xesam:album']
-    print(f'{album}')
+    return f'{album}'
 
 
-def show_art_url():
+def show_arturl():
     metadata = get_spotify_property("Metadata")
-    print("%s" % metadata['mpris:artUrl'])
+    return "%s" % metadata['mpris:artUrl']
 
 
 def get_spotify_property(spotify_property):
@@ -242,6 +216,26 @@ def get_spotify_property(spotify_property):
         sys.exit(1)
 
 
+def perform_play():
+    perform_spotify_action("Play")
+
+
+def perform_pause():
+    perform_spotify_action("Pause")
+
+
+def perform_playpause():
+    perform_spotify_action("PlayPause")
+
+
+def perform_next():
+    perform_spotify_action("Next")
+
+
+def perform_prev():
+    perform_spotify_action("Previous")
+
+
 def perform_spotify_action(spotify_command):
     Popen('dbus-send --print-reply --dest=org.mpris.MediaPlayer2."%s" ' %
           client +
@@ -260,9 +254,9 @@ def show_position():
 
     if l_hours != "00":
         # Only show hours if the song is more than an hour long
-        print(f'({p_hours}:{p_minutes}:{p_seconds}/{l_hours}:{l_minutes}:{l_seconds})')
+        return f'({p_hours}:{p_minutes}:{p_seconds}/{l_hours}:{l_minutes}:{l_seconds})'
     else:
-        print(f'({p_minutes}:{p_seconds}/{l_minutes}:{l_seconds})')
+        return f'({p_minutes}:{p_seconds}/{l_minutes}:{l_seconds})'
 
 
 if __name__ == "__main__":
