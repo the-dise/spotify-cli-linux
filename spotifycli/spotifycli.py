@@ -9,7 +9,6 @@ import datetime
 from subprocess import Popen, PIPE
 
 import dbus
-import lyricwikia
 
 
 def main():
@@ -75,14 +74,13 @@ def get_arguments():
         ("--play", "plays the song"),
         ("--pause", "pauses the song"),
         ("--playpause", "plays or pauses the song (toggles a state)"),
-        ("--lyrics", "shows the lyrics for the song"),
         ("--next", "plays the next song"),
         ("--prev", "plays the previous song")
     ]
 
 
 def show_version():
-    return "2.0.0 (2024-07-12) by the_dise\nFork of: https://github.com/pwittchen/spotify-cli-linux"
+    return "2.0.0 (2024-08-13) by the_dise\nFork of: https://github.com/pwittchen/spotify-cli-linux"
 
 
 def get_song():
@@ -142,16 +140,6 @@ def show_songshort():
     _, title = get_song()
     title = title[:12] + (title[12:] and '…')
     return f'{title}'
-
-
-def show_lyrics():
-    try:
-        artist, title = get_song()
-        lyrics = lyricwikia.get_all_lyrics(artist, title)
-        lyrics = ''.join(lyrics[0])
-        return lyrics
-    except BaseException:
-        return 'lyrics not found'
 
 
 def show_artist():
@@ -237,10 +225,13 @@ def perform_prev():
 
 
 def perform_spotify_action(spotify_command):
-    Popen('dbus-send --print-reply --dest=org.mpris.MediaPlayer2."%s" ' %
-          client +
-          '/org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player."%s"' %
-          spotify_command, shell=True, stdout=PIPE)
+    Popen(
+        f'dbus-send --print-reply --dest=org.mpris.MediaPlayer2.{client} '
+        f'/org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.{spotify_command}',
+        shell=True,
+        stdout=PIPE,
+        stderr=PIPE,
+    ).communicate()
 
 def show_position():
     metadata = get_spotify_property("Metadata")
@@ -261,3 +252,4 @@ def show_position():
 
 if __name__ == "__main__":
     main()
+

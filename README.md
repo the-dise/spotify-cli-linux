@@ -91,14 +91,6 @@ sudo apt-get install python-dbus
 
 If you are using another distro, then try to install `python-dbus` with your package manager.
 
-### lyricwikia
-
-When, you're missing `lyricwikia` dependency, run the following command:
-
-```
-pip install lyricwikia
-```
-
 usage with tmux
 ---------------
 

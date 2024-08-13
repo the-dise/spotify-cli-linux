@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+v. 2.0.0
+--------
+*13 Aug 2024*
+- deleted lyricwikia
+- deleted `--lyrics` option
+
 v. 1.8.2
 --------
 *1 Nov 2023*
